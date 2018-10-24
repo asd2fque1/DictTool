@@ -5,6 +5,13 @@
  Everyone is permitted to copy and distribute verbatim copies
  of this license document, but changing it is not allowed.
 
+ 作者对版权的额外强调
+您可以免费并且在不通知作者的情况下，使用和修改本项目，但是要遵守如下规则：
+1 您不能在您的软件为闭源软件时包含此项目的任何内容。
+2 您不能在收费软件中包含此项目的任何内容。
+3 您使用修改后的本项目代码，但必须明确标记原作者及项目的版权信息。
+4 您可以免费使用此项目，但您不能删除项目中包含的任何作者或版本信息。
+
                             Preamble
 
   The GNU General Public License is a free, copyleft license for

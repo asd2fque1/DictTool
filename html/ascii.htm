@@ -1,0 +1,62 @@
+﻿<!Doctype html>
+<html xmlns=http://www.w3.org/1999/xhtml>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<!-- 作者asd2fque1 -->
+<!-- 使用IE的用户请下载安装google chrome frame组件，使IE有更好的兼容性 https://pan.baidu.com/s/1Hgjsk2q5STB7Wr0ZunI21A -->
+<link rel="stylesheet" href="../css/common.css"/>
+<script src="../js/jquery.min.js"></script><!--1.11.3-->
+<script src="../js/util.js"></script>
+<script>
+function keydownFunc(event){
+	var e = event || window.event || arguments.callee.caller.arguments[0];
+	if(e && e.keyCode==0x0D){//回车
+		runFunc();
+	}
+
+}
+function runFunc(){
+	var str="";
+	var txtValue=$("#txtSource").val();
+	if(txtValue.length>0){
+		var txtUnicode=txtValue.charCodeAt(0);
+		str=str+"Unicode:&nbsp;"+txtUnicode.toString()+"<br>";
+		str=str+"Unicode:&nbsp;"+"0x"+txtUnicode.toString(16).toUpperCase()+"<br>";
+		
+		var txtUtf8Str=encodeURI(txtValue);
+		var txtUtf8=0;
+		if(txtValue.charCodeAt(0)<=0xFF){
+			txtUtf8=txtValue.charCodeAt(0);
+		}else{
+			var txtUtf8Str="";
+			var txtUtf8StrArr=encodeURI(txtValue).split("%");
+			for(var i=txtUtf8StrArr.length-1;i>=0;i--){
+				txtUtf8Str=txtUtf8Str+txtUtf8StrArr[i];
+			}
+			txtUtf8=parseInt(txtUtf8Str,16);
+		}
+		str=str+"UTF-8:&nbsp;"+txtUtf8.toString()+"<br>";
+		str=str+"UTF-8:&nbsp;"+"0x"+txtUtf8.toString(16).toUpperCase()+"<br>";
+	}
+	$("#spanTarget").html(str);
+	$("#txtSource").focus();
+	window.Util.selectTextBoxText($("#txtSource"));
+}
+</script>
+</head>
+<body>
+<h2>词库处理工具</h2>
+<h4>字符编码检测</h4>
+<a href="../index.htm">←返回工具列表</a>
+<br>
+<br>
+<input type="text" id="txtSource" class="test_key_text" maxlength="1" onkeydown="keydownFunc(event);"/>
+<br>
+<button id="runBtn" onclick="runFunc();">转换编码</button>
+<br>
+<br>
+<span id="spanTarget"></span>
+<br>
+</body>
+</html>

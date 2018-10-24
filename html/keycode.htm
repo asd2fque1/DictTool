@@ -1,0 +1,39 @@
+﻿<!Doctype html>
+<html xmlns=http://www.w3.org/1999/xhtml onclick="setTextBoxFocus()" onkeydown="setTextBoxFocus()" onkeyup="setTextBoxFocus()">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<!-- 作者asd2fque1 -->
+<!-- 使用IE的用户请下载安装google chrome frame组件，使IE有更好的兼容性 https://pan.baidu.com/s/1Hgjsk2q5STB7Wr0ZunI21A -->
+<link rel="stylesheet" href="../css/common.css"/>
+<script src="../js/jquery.min.js"></script><!--1.11.3-->
+<script src="../js/util.js"></script>
+<script>
+function keydownFunc(event){
+	var e = event || window.event || arguments.callee.caller.arguments[0];
+	if(e){
+		var str="";
+		str=str+"Code:&nbsp;"+e.keyCode.toString()+"<br>";
+		str=str+"Code:&nbsp;0x"+e.keyCode.toString(16)+"<br>";
+		$("#spanTarget").html(str);
+	}
+}
+function setTextBoxFocus(){
+	$("#txtSource").focus();
+}
+</script>
+</head>
+<body onclick="setTextBoxFocus()" onkeydown="setTextBoxFocus()" onkeyup="setTextBoxFocus()">
+<h2>词库处理工具</h2>
+<h4>按键编码检测</h4>
+<a href="../index.htm">←返回工具列表</a>
+<br>
+<br>
+<input type="text" id="txtSource" class="test_key_text" maxlength="0" onkeydown="keydownFunc(event);"/>
+<br>
+<br>
+<span id="spanTarget"></span>
+<br>
+<input type="text" id="txtNone" maxlength="0" style="position:absolute;float:left;top:-100px;left:0px;" onkeydown="setTextBoxFocus();" onkeyup="setTextBoxFocus()"/>
+</body>
+</html>

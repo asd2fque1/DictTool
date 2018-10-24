@@ -1,0 +1,104 @@
+<!Doctype html>
+<html xmlns=http://www.w3.org/1999/xhtml>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<!-- 作者asd2fque1 -->
+<!-- 使用IE的用户请下载安装google chrome frame组件，使IE有更好的兼容性 https://pan.baidu.com/s/1Hgjsk2q5STB7Wr0ZunI21A -->
+<link rel="stylesheet" href="../css/common.css"/>
+<script src="../js/jquery.min.js"></script><!--1.11.3-->
+<script src="../js/util.js"></script>
+<script>
+var toTxtBox=null;
+function selectFileFunc(){
+	if(toTxtBox){
+		Util.readFileToTextBox($("#file"),toTxtBox);
+	}
+}
+function importSource(){
+	toTxtBox=$("#txtSource");
+	$("#file").click();
+}
+function cleanSource(){
+	Util.cleanTextBox($("#txtSource"));
+}
+function runFunc(){
+	var codeLength=0;
+	var tempStr=$("#codeLength").val();
+	if(isNaN(tempStr)){
+		$("#codeLength").val("0");
+	}else{
+		codeLength=Number(tempStr);
+	}
+	
+	var lineList=window.Util.parseLineStrToLineList($("#txtSource").val());
+	var newLineList=[];
+	var errorLineList=[];
+	
+	for(var i=0;i<lineList.length;i++){
+		var currSplit=lineList[i].split(" ");
+		if(currSplit.length==2){
+			if(/^[a-zA-Z]+$/.test(currSplit[0]) && currSplit[0].length<=252 && currSplit[1].length<=126){
+				newLineList.push(lineList[i]);
+			}else{
+				errorLineList.push(lineList[i]);
+			}
+		}else{
+			errorLineList.push(lineList[i]);
+		}
+	}
+	
+	if(errorLineList.length>0){
+		alert("格式错误数据行(编码只使能用26个字母，编码长度不能超过252，候选词字数不能超过126，重码超过99重自动忽略)：\n"+window.Util.parseLineListToLineStr(errorLineList));
+	}
+	
+	var str=window.Util.parseLineListToLineStr(newLineList);
+	window.Util.downloadFile($("#downLink"),Util.parseBaiduBlob(codeLength,str,$("#nonuniqueness").prop("checked"),$("#separatecharandfollow").prop("checked"),$("#separate15space").prop("checked")),"export.def","bin");
+}
+</script>
+</head>
+<body>
+<h2>词库处理工具</h2>
+<h4>百度手机输入法自定义方案</h4>
+<a href="../index.htm">←返回工具列表</a>
+<a id="downLink" class="hidden_dom">下载</a>
+<input type="file" id="file" onchange="selectFileFunc()">
+<br>
+<br>
+<br>
+<span class="warning_color">请先进行</span><a href="../html/qq2scatter.htm">QQ转打散格式</a><span class="warning_color">或</span><a href="../html/duoduo2scatter.htm">多多转打散格式</a>
+<br>
+<textarea id="txtSource">
+g 一
+g 与
+g 王
+aa 式
+aa 工
+f 地
+f 都
+f 却
+d 在
+</textarea>
+<br>
+<button id="importSourceBtn" onclick="importSource();">导入内容</button>
+<button id="cleanSourceBtn" onclick="cleanSource();">清空文本</button>
+<br>
+<br>
+最大编码位数
+<input type="text" id="codeLength" maxlength="2" value="0" onclick="this.select()" />
+(自动上屏编码位数，不自动上屏请填0)
+<br>
+<input type="checkbox" id="separatecharandfollow"/>
+<label for="separatecharandfollow">用空位分开当前候选与后续候选(补全角空格)</label>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<input type="checkbox" id="separate15space"/>
+<label for="separate15space">补15个全角空格</label>
+<br>
+<input type="checkbox" id="nonuniqueness"/>
+<label for="nonuniqueness">使生成编码在全码时候候选不唯一(使“四”码唯一不自动上屏且第“五”码顶屏，补全角空格候选)</label>
+<br>
+<br>
+<button id="runBtn" onclick="runFunc();">处理并导出</button>
+<br>
+</body>
+</html>

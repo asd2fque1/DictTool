@@ -1,0 +1,22 @@
+﻿/*整体样式*/
+textarea{
+	width:600px;
+	height:400px;
+}
+input[type='text']{
+	width:50px;
+}
+input.test_key_text[type='text']{
+	width:440px;
+}
+input[type='file']{
+	display:none;
+}
+
+/*可选样式*/
+.warning_color{
+	color:red;
+}
+.hidden_dom{
+	display:none;
+}
