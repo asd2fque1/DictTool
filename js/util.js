@@ -234,12 +234,18 @@
 		var errorLineList=[];
 		
 		for(var i=0;i<lineList.length;i++){
-			var currSplit=lineList[i].replace(" ","").split("\t");
+			var currSplit=lineList[i].split("\t");
 			if(currSplit.length==2 && currSplit[0].length>0 && currSplit[1].length>0){
-				if(lineList[i].indexOf(" ")>=0){
+				if(lineList[i].replace(/\\\\/g," ").replace(/\\t/g," ").indexOf("\\")>=0){
 					errorLineList.push(lineList[i]);
+				}else if(currSplit[1].indexOf(" ")>=0){
+					errorLineList.push(lineList[i]);
+				}else{
+					//替换空格和Tab符
+					currSplit[0]=currSplit[0].replace(/\\\\/g,"\\").replace(/\\t/g,"\t").replace(/ /g,"$$20");
+					
+					newLineList.push(currSplit[1]+" "+currSplit[0]);
 				}
-				newLineList.push(currSplit[1]+" "+currSplit[0]);
 			}else{
 				errorLineList.push(lineList[i]);
 			}
@@ -263,12 +269,16 @@
 		var errorLineList=[];
 		
 		for(var i=0;i<lineList.length;i++){
-			var currSplit=lineList[i].replace("\t","").split(" ");
+			var currSplit=lineList[i].split(" ");
 			if(currSplit.length==2 && currSplit[0].length>0 && currSplit[1].length>0){
-				if(lineList[i].indexOf("\t")>=0){
+				if(currSplit[0].indexOf("\t")>=0){
 					errorLineList.push(lineList[i]);
+				}else{
+					//替换空格和Tab符
+					currSplit[1]=currSplit[1].replace(/[$]20/g," ").replace(/\\/g,"\\\\").replace(/\t/g,"\\t");
+					
+					newLineList.push(currSplit[1]+"	"+currSplit[0]);
 				}
-				newLineList.push(currSplit[1]+"	"+currSplit[0]);
 			}else{
 				errorLineList.push(lineList[i]);
 			}
@@ -765,6 +775,10 @@
 			if(currSplit.length==2){
 				var currCode=currSplit[0].toLowerCase();
 				var currChar=currSplit[1];
+				
+                //替换空格
+				currChar=currChar.replace(/[$]20/g," ");
+				
 				var codeLength=currCode.length;
 				var charLength=currChar.length;
 				
@@ -882,6 +896,9 @@
 					lastCode=currSplit[0]
 					repeatCount=1;
 				}
+				
+				//替换空格
+				currSplit[1]=currSplit[1].replace(/[$]20/g," ");
 				
 				var isCheckOk=false;//QQ五笔系统词库是否支持
 				isCheckOk=/^[a-y]+$/.test(currSplit[0]);//编码为a到y
