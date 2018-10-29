@@ -873,6 +873,295 @@
 			}
 		}
 	}
+	//生成微软五笔输入法blob
+	Util.parseMsWubiBlob=function(str,isSeparateCharAndFollow){
+		var lineList=Util.parseLineStrToLineList(str);
+		return Util.parseMsWubiBlobByList(lineList,isSeparateCharAndFollow);
+	};
+	Util.parseMsWubiBlobByList=function(lineList,isSeparateCharAndFollow){
+		var errorLineList=[];
+		var splitListMain=[];
+		var splitListCustom=[];
+		
+		//排序
+		lineList=Util.sortByList(lineList);
+		
+		//去除候选唯一（添加全角空格候选）
+		if(isSeparateCharAndFollow){
+			//去除候选唯一
+			var tempLineList=[];
+			var currCode="";
+			var lastCode="";
+			var codeLength=0;
+			var lastCodeLength=0;
+			var repeatNum=0;
+			
+			for(var i=0;i<lineList.length;i++){
+				var currSplit=lineList[i].split(" ");
+				if(currSplit.length==2){
+					currCode=currSplit[0];
+					var currChar=currSplit[1];
+					codeLength=currCode.length;
+					var charLength=currChar.length;
+					
+					if(lastCode!=currCode){
+						if(repeatNum>0 && lastCodeLength<4){
+							//补充全角空格到九个候选
+							var stopSpaceNum=0;
+							for(var j=repeatNum+1;j<=9;j++){
+								var spaceStr="";
+								for(var k=0;k<=stopSpaceNum;k++){
+									spaceStr=spaceStr+"　";
+								}
+								tempLineList.push(lastCode + " " + spaceStr);
+								stopSpaceNum++;
+							}
+						}
+						
+						repeatNum=1;
+						lastCode=currCode;
+					}else{
+						repeatNum++;
+					}
+					
+					lastCodeLength=codeLength;
+					tempLineList.push(lineList[i]);
+				}else{
+					errorLineList.push(lineList[i]);
+				}
+			}
+			
+			if(repeatNum>0 && codeLength<4){
+				//补充全角空格到九个候选
+				var stopSpaceNum=0;
+				for(var j=repeatNum+1;j<=9;j++){
+					var spaceStr="";
+					for(var k=0;k<=stopSpaceNum;k++){
+						spaceStr=spaceStr+"　";
+					}
+					tempLineList.push(currCode + " " + spaceStr);
+					stopSpaceNum++;
+				}
+			}
+			
+			lineList=tempLineList;
+		}
+		
+		//分离主码表与自定义短语
+		var i=0;
+		for(;i<lineList.length;i++){
+			var currSplit=lineList[i].split(" ");
+			if(currSplit.length==2){
+				currSplit[0]=currSplit[0].toLowerCase();
+				currSplit[1]=currSplit[1].replace(/[$]20/g," ");//替换空格
+				
+				if(/^[a-zA-Z]{1,4}$/.test(currSplit[0]) && currSplit[1].length<=64){
+					if(currSplit[0].substr(0,1)!="z"){
+						splitListMain.push(currSplit);
+					}else{
+						splitListCustom.push(currSplit);
+					}
+				} else {
+					errorLineList.push(lineList[i]);
+				}
+			}
+		}
+		
+		var blobList=[];
+		
+		////主码表
+		var mainHeadList=[0x69,0x6D,0x73,0x63,0x77,0x75,0x62,0x69,0x01,0x00,0x01,0x00,0x40,0x00,0x00,0x00,
+						  0xA8,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x12,0x34,0x56,0x78,0x00,0x00,0x00,0x00,
+						  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+						  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00];
+		var mainContentList=[];
+		
+		var mainOffset=0;
+		var letter1="`";
+		var mainPrevLetter="`";
+		var mainLetterOffsetList=[];//26字母偏移
+		
+		var prevCode="";
+		var repeatNum=1;
+			
+		for(var i=0;i<splitListMain.length;i++){
+			var currCode=splitListMain[i][0];
+			var currChar=splitListMain[i][1];
+			var codeLength=currCode.length;
+			var charLength=currChar.length;
+			letter1=currCode.substr(0,1);
+				
+			if(prevCode!=currCode){
+				repeatNum=1;
+				prevCode=currCode;
+			}else{
+				repeatNum++;
+			}
+			
+			if(letter1!=mainPrevLetter){
+				//计算头部各字母偏移
+				for(var le=mainPrevLetter.charCodeAt(0)+1;le<=letter1.charCodeAt(0);le++){
+					mainLetterOffsetList[(le-0x61)*4+0]=mainOffset%0x100;
+					mainLetterOffsetList[(le-0x61)*4+1]=Math.floor(mainOffset/0x100)%0x100;
+					mainLetterOffsetList[(le-0x61)*4+2]=Math.floor(mainOffset/0x10000)%0x100;
+					mainLetterOffsetList[(le-0x61)*4+3]=Math.floor(mainOffset/0x1000000)%0x100;
+				}
+				
+				mainPrevLetter=letter1;
+			}
+			
+			//词条头部
+			var contentLength=0x10+charLength*2;
+			mainContentList.push(contentLength, 0x00);//词条长度
+			mainContentList.push(repeatNum, 0x00);//重码号
+			mainContentList.push(codeLength, 0x00);//编码长度
+			
+			//写编码
+			var c=0;
+			for(;c<codeLength;c++){
+				var tempCodeCode=currCode.substr(c,1).charCodeAt(0);
+				mainContentList.push(tempCodeCode, 0x00);//有编码
+			}
+			for(;c<4;c++){
+				mainContentList.push(0x00, 0x00);//无编码
+			}
+			
+			//写候选
+			for(c=0;c<charLength;c++){
+				var tempCharCode=currChar.substr(c,1).charCodeAt(0);
+				mainContentList.push(tempCharCode%0x100, Math.floor(tempCharCode/0x100)%0x100);//候选
+			}
+			
+			//结尾
+			mainContentList.push(0x00, 0x00);
+			
+			//偏移
+			mainOffset=mainOffset+contentLength;
+			
+			if(mainOffset+0x40+0x68>0xffffffff){
+				alert("词库过大，无法生成");
+				return [new Blob()];
+			}
+		}
+		
+		//计算头部各字母偏移
+		for(var le=letter1.charCodeAt(0)+1;le<="z".charCodeAt(0);le++){
+			mainLetterOffsetList[(le-0x61)*4+0]=mainOffset%0x100;
+			mainLetterOffsetList[(le-0x61)*4+1]=Math.floor(mainOffset/0x100)%0x100;
+			mainLetterOffsetList[(le-0x61)*4+2]=Math.floor(mainOffset/0x10000)%0x100;
+			mainLetterOffsetList[(le-0x61)*4+3]=Math.floor(mainOffset/0x1000000)%0x100;
+		}
+		
+		//合并固定头部与偏移
+		mainHeadList=mainHeadList.concat(mainLetterOffsetList);
+		
+		//文件大小
+		mainHeadList[0x14]=(mainOffset+0x40+0x68)%0x100;
+		mainHeadList[0x15]=Math.floor((mainOffset+0x40+0x68)/0x100)%0x100;
+		mainHeadList[0x16]=Math.floor((mainOffset+0x40+0x68)/0x10000)%0x100;
+		mainHeadList[0x17]=Math.floor((mainOffset+0x40+0x68)/0x1000000)%0x100;
+		
+		//生成文件
+		if(letter1!="`"){
+			//生成文件
+			blobList.push(new Blob([new Uint8Array(mainHeadList.concat(mainContentList))]));
+		}else{
+			//无主码表词条时生成空文件
+			blobList.push(new Blob());
+		}
+		
+		
+		////自定义短语码表
+		if(splitListCustom.length>0){
+			var customHeadList=[0x6D,0x73,0x63,0x68,0x78,0x75,0x64,0x70,0x02,0x00,0x60,0x00,0x01,0x00,0x00,0x00,
+								0x40,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+								0x12,0x34,0x56,0x78,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+								0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00];
+			var customContentList=[];
+			
+			var customHeadOffset=0x40+4*splitListCustom.length;
+			var customOffset=0;
+			var customCharOffsetList=[];
+			
+			var prevCode="";
+			var repeatNum=1;
+			
+			//词条起始位置
+			customHeadList[0x14]=customHeadOffset%0x100;
+			customHeadList[0x15]=Math.floor(customHeadOffset/0x100)%0x100;
+			customHeadList[0x16]=Math.floor(customHeadOffset/0x10000)%0x100;
+			customHeadList[0x17]=Math.floor(customHeadOffset/0x1000000)%0x100;
+			
+			//词条数
+			customHeadList[0x1C]=splitListCustom.length%0x100;
+			customHeadList[0x1D]=Math.floor(splitListCustom.length/0x100)%0x100;
+			customHeadList[0x1E]=Math.floor(splitListCustom.length/0x10000)%0x100;
+			customHeadList[0x1F]=Math.floor(splitListCustom.length/0x1000000)%0x100;
+			
+			//自定义短语
+			for(var i=0;i<splitListCustom.length;i++){
+				var currCode=splitListCustom[i][0];
+				var currChar=splitListCustom[i][1];
+				var codeLength=currCode.length;
+				var charLength=currChar.length;
+				
+				if(prevCode!=currCode){
+					repeatNum=1;
+					prevCode=currCode;
+				}else{
+					repeatNum++;
+				}
+				
+				//偏移
+				customCharOffsetList.push(customOffset%0x100);
+				customCharOffsetList.push(Math.floor(customOffset/0x100)%0x100);
+				customCharOffsetList.push(Math.floor(customOffset/0x10000)%0x100);
+				customCharOffsetList.push(Math.floor(customOffset/0x1000000)%0x100);
+				
+				//词条头部
+				customContentList.push(0x10, 0x00, 0x10, 0x00);
+				customContentList.push(0x12+codeLength*2, 0x00);
+				customContentList.push(repeatNum, 0x06);
+				customContentList.push(0x00, 0x00, 0x00, 0x00);
+				customContentList.push(0x12, 0x34, 0x56, 0x78);
+				
+				//写编码
+				for(var c=0;c<codeLength;c++){
+					var tempCodeCode=currCode.substr(c,1).charCodeAt(0);
+					customContentList.push(tempCodeCode, 0x00);//编码
+				}
+				customContentList.push(0x00, 0x00);
+				
+				//写候选
+				for(var c=0;c<charLength;c++){
+					var tempCharCode=currChar.substr(c,1).charCodeAt(0);
+					customContentList.push(tempCharCode%0x100, Math.floor(tempCharCode/0x100)%0x100);//候选
+				}
+				customContentList.push(0x00, 0x00);
+				
+				customOffset=customOffset+0x14+codeLength*2+charLength*2;
+			}
+			
+			//合并固定头部与偏移
+			customHeadList=customHeadList.concat(customCharOffsetList);
+			
+			//文件大小
+			customHeadList[0x18]=(customHeadOffset+customOffset)%0x100;
+			customHeadList[0x19]=Math.floor((customHeadOffset+customOffset)/0x100)%0x100;
+			customHeadList[0x1A]=Math.floor((customHeadOffset+customOffset)/0x10000)%0x100;
+			customHeadList[0x1B]=Math.floor((customHeadOffset+customOffset)/0x1000000)%0x100;
+			
+			//生成文件
+			blobList.push(new Blob([new Uint8Array(customHeadList.concat(customContentList))]));
+		}
+		
+		if(errorLineList.length>0){
+			console.log("格式错误数据行(编码只使能用26个字母，编码长度不能超过4，候选长度不能超过64)：\n"+Util.parseLineListToLineStr(errorLineList));
+			alert("格式错误数据行(编码只使能用26个字母，编码长度不能超过4，候选长度不能超过64)：\n"+Util.parseLineListToLineStr(errorLineList));
+		}
+		
+		return blobList;
+	}
 	//生成QQ五笔输入法txt
 	Util.parseQqWubi=function(str){
 		var lineList=Util.parseLineStrToLineList(str);

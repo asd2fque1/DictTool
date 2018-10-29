@@ -1,0 +1,72 @@
+<!Doctype html>
+<html xmlns=http://www.w3.org/1999/xhtml>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<!-- 作者asd2fque1 -->
+<!-- 使用IE的用户请下载安装google chrome frame组件，使IE有更好的兼容性 https://pan.baidu.com/s/1Hgjsk2q5STB7Wr0ZunI21A -->
+<link rel="stylesheet" href="../css/common.css"/>
+<script src="../js/jquery.min.js"></script><!--1.11.3-->
+<script src="../js/util.js"></script>
+<script>
+var toTxtBox=null;
+function selectFileFunc(){
+	if(toTxtBox){
+		Util.readFileToTextBox($("#file"),toTxtBox);
+	}
+}
+function importSource(){
+	toTxtBox=$("#txtSource");
+	$("#file").click();
+}
+function cleanSource(){
+	Util.cleanTextBox($("#txtSource"));
+}
+function runFunc(){
+	var blobArr=Util.parseMsWubiBlob($("#txtSource").val(),$("#separatecharandfollow").prop("checked"))
+	window.Util.downloadFile($("#downLink"),blobArr[0],"ChsWubiNew.lex","bin");
+	if(blobArr.length>1){
+		window.Util.downloadFile($("#downLink"),blobArr[1],"custom.dat","bin");
+	}
+}
+</script>
+</head>
+<body>
+<h2>词库处理工具</h2>
+<h4>微软五笔词库文件</h4>
+<a href="../index.htm">←返回工具列表</a>
+<a id="downLink" class="hidden_dom">下载</a>
+<input type="file" id="file" onchange="selectFileFunc()">
+<br>
+<br>
+<br>
+<span class="warning_color">请先进行</span><a href="../html/qq2scatter.htm">QQ转打散格式</a><span class="warning_color">或</span><a href="../html/duoduo2scatter.htm">多多转打散格式</a>
+<br>
+<textarea id="txtSource">
+g 一
+g 与
+g 王
+zt ！
+aa 式
+aa 工
+az 不不不
+f 地
+f 都
+f 却
+d 在
+zs ……
+zs …
+</textarea>
+<br>
+<button id="importSourceBtn" onclick="importSource();">导入内容</button>
+<button id="cleanSourceBtn" onclick="cleanSource();">清空文本</button>
+<br>
+<br>
+<input type="checkbox" id="separatecharandfollow"/>
+<label for="separatecharandfollow">用空位分开当前候选与后续候选(补全角空格)</label>
+<br>
+<br>
+<button id="runBtn" onclick="runFunc();">处理并导出</button>
+<br>
+</body>
+</html>
