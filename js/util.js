@@ -45,7 +45,6 @@
 		};
 		return true
 	};
-
 	
 	////页面通用方法////
 	//清空文本框
@@ -387,7 +386,7 @@
 			}else if(splitX[0]>splitY[0]){
 				return 1;
 			}else{
-				return -1;//正常应该是0，返回-1解决浏览器相等顺序混乱的问题
+				return 0;
 			}
 		}
 		
@@ -415,14 +414,8 @@
 		}else{
 			//不是排序好的词库则进行排序
 			
-			//☆解决360浏览器在排序时不能保证相同编码词条原始顺序的错误（先合并再打散）
-			lineList=Util.comboByList(lineList);
-			
 			//调用系统排序
 			newLineList=lineList.sort(compareFunc);
-			
-			//☆解决360浏览器在排序时不能保证相同编码词条原始顺序的错误（先合并再打散）
-			newLineList=Util.scatterByList(newLineList);
 		}
 		
 		if(errorLineList.length>0){
