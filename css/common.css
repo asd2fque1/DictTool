@@ -12,6 +12,9 @@ input.test_key_text[type='text']{
 input[type='file']{
 	display:none;
 }
+a{
+	color:blue;
+}
 
 /*可选样式*/
 .warning_color{
