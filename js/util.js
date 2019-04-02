@@ -561,6 +561,62 @@
 		
 		return resultStr;
 	};
+	//检测全码的空简码
+	Util.testEmptySimple=function(str){
+		var lineList=Util.parseLineStrToLineList(str);
+		var newLineList=Util.testEmptySimpleByList(lineList);
+		return Util.parseLineListToLineStr(newLineList);
+	};
+	Util.testEmptySimpleByList=function(lineList){
+		var newLineList=[];
+		var newLineMap={};
+		var existArray=[];
+		var errorLineList=[];
+		var lastCode="";
+		
+		//排序
+		lineList=Util.sortByList(lineList);
+		
+		for(var i=0;i<lineList.length;i++){
+			var currSplit=lineList[i].split(" ");
+			if(currSplit.length==2){
+				var codeStr=currSplit[0];
+				var charStr=currSplit[1];
+				var codeLength=codeStr.length;
+				var charLength=charStr.length;
+				
+				if (lastCode!=codeStr.toLowerCase()) {
+					lastCode=codeStr.toLowerCase();
+				} else {
+					//跳过重复编码
+					continue;
+				}
+				
+				existArray.splice(codeLength);
+				for (var j=1;j<=codeLength-1;j++){
+					var currSplitCode=codeStr.substr(0,j);
+					if(existArray[j]!=currSplitCode){
+						//检出不存在的简码
+						if(!newLineMap.hasOwnProperty(currSplitCode)){
+							//记录没有记录过的空简码
+							newLineMap[currSplitCode]="";
+							newLineList.push(currSplitCode+" "+"空");
+						}
+					}
+				}
+				existArray[codeLength]=codeStr;
+			}else{
+				errorLineList.push(lineList[i]);
+			}
+		}
+		
+		if(errorLineList.length>0){
+			console.log("格式错误数据行：\n"+Util.parseLineListToLineStr(errorLineList));
+			alert("格式错误数据行：\n"+Util.parseLineListToLineStr(errorLineList));
+		}
+		
+		return newLineList;
+	};
 	//出简不出全(isCharOrWord:0=单字加词组 1=仅单字 2=仅词组)
 	Util.simpleNotFull=function(str,isCharOrWord,keepMaxLength){
 		var lineList=Util.parseLineStrToLineList(str);
