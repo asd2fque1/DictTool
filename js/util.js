@@ -1005,7 +1005,7 @@
 				currSplit[1]=currSplit[1].replace(/[$]20/g," ");//替换空格
 				
 				if(/^[a-zA-Z]{1,4}$/.test(currSplit[0]) && currSplit[1].length<=64){
-					if(currSplit[0].substr(0,1)!="z"){
+					if(!/z/.test(currSplit[0])){
 						splitListMain.push(currSplit);
 					}else{
 						splitListCustom.push(currSplit);
