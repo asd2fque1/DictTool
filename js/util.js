@@ -657,18 +657,28 @@
 		}
 		
 		for(var tempCodeChar in codeCharMap){
-			var tempCodeCharArr=codeCharMap[tempCodeChar];
-			var minLength=100;
-			for(var i=0;i<tempCodeCharArr.length;i++){
-				if(tempCodeCharArr[i].length<minLength){
-					minLength=tempCodeCharArr[i].length;
+			var tempCodeCharArr = [];
+			var referCodeCharArr=codeCharMap[tempCodeChar];
+			for(var i=0;i<referCodeCharArr.length;i++){
+				var hasSimpleCode = false;
+				var currCode = referCodeCharArr[i];
+				for(var j=0;j<currCode.length-1;j++){
+					if(tempCodeCharArr.indexOf(currCode.substr(0,j+1))>=0){
+						hasSimpleCode = true;
+						break;
+					}
+				}
+				
+				if (!hasSimpleCode){
+					for(var j=tempCodeCharArr.length-1;j>=0;j--){
+						if(tempCodeCharArr[j].indexOf(currCode)==0){
+							tempCodeCharArr.splice(j,1);
+						}
+					}
+					tempCodeCharArr.push(currCode);
 				}
 			}
-			for(var i=tempCodeCharArr.length-1;i>=0;i--){
-				if(tempCodeCharArr[i].length>keepMaxLength && tempCodeCharArr[i].length!=minLength){
-					tempCodeCharArr.splice(i,1);
-				}
-			}
+			codeCharMap[tempCodeChar] = tempCodeCharArr;
 		}
 		
 		for(var i=0;i<lineList.length;i++){

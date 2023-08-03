@@ -130,10 +130,13 @@ a 工
 <br>aaaa 工
 <br>b 了
 <br>c 以
+<br>g 工
+<br>gong 工
 <br>--↓--
 <br>a 工
 <br>b 了
 <br>c 以
+<br>g 工
 
 ### 提取指定长度的词条
 根据参数提取符合条件的词条
