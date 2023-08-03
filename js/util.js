@@ -618,16 +618,19 @@
 		return newLineList;
 	};
 	//出简不出全(isCharOrWord:0=单字加词组 1=仅单字 2=仅词组)
-	Util.simpleNotFull=function(str,isCharOrWord,keepMaxLength){
+	Util.simpleNotFull=function(str,isCharOrWord,keepMaxType,keepMaxLength){
 		var lineList=Util.parseLineStrToLineList(str);
-		var newLineList=Util.simpleNotFullByList(lineList,isCharOrWord,keepMaxLength);
+		var newLineList=Util.simpleNotFullByList(lineList,isCharOrWord,keepMaxType,keepMaxLength);
 		return Util.parseLineListToLineStr(newLineList);
 	};
 	Util.CONST.CHAR_OR_WORD={};
 	Util.CONST.CHAR_OR_WORD.ALL=0;
 	Util.CONST.CHAR_OR_WORD.CHAR=1;
 	Util.CONST.CHAR_OR_WORD.WORD=2;
-	Util.simpleNotFullByList=function(lineList,isCharOrWord,keepMaxLength){
+	Util.CONST.KEEP_MAX_TYPE={};
+	Util.CONST.KEEP_MAX_TYPE.LARGE_THAN=0;
+	Util.CONST.KEEP_MAX_TYPE.SMALL_THAN=1;
+	Util.simpleNotFullByList=function(lineList,isCharOrWord,keepMaxType,keepMaxLength){
 		var newLineList=[];
 		var errorLineList=[];
 		
@@ -662,20 +665,24 @@
 			for(var i=0;i<referCodeCharArr.length;i++){
 				var hasSimpleCode = false;
 				var currCode = referCodeCharArr[i];
-				for(var j=0;j<currCode.length-1;j++){
-					if(tempCodeCharArr.indexOf(currCode.substr(0,j+1))>=0){
-						hasSimpleCode = true;
-						break;
-					}
-				}
-				
-				if (!hasSimpleCode){
-					for(var j=tempCodeCharArr.length-1;j>=0;j--){
-						if(tempCodeCharArr[j].indexOf(currCode)==0){
-							tempCodeCharArr.splice(j,1);
+				if(keepMaxLength>0 && (keepMaxType==Util.CONST.KEEP_MAX_TYPE.LARGE_THAN && currCode.length>keepMaxLength || keepMaxType==Util.CONST.KEEP_MAX_TYPE.SMALL_THAN && currCode.length<keepMaxLength)){
+					tempCodeCharArr.push(currCode);
+				}else{
+					for(var j=0;j<currCode.length-1;j++){
+						if(tempCodeCharArr.indexOf(currCode.substr(0,j+1))>=0){
+							hasSimpleCode = true;
+							break;
 						}
 					}
-					tempCodeCharArr.push(currCode);
+					
+					if (!hasSimpleCode){
+						for(var j=tempCodeCharArr.length-1;j>=0;j--){
+							if(tempCodeCharArr[j].indexOf(currCode)==0){
+								tempCodeCharArr.splice(j,1);
+							}
+						}
+						tempCodeCharArr.push(currCode);
+					}
 				}
 			}
 			codeCharMap[tempCodeChar] = tempCodeCharArr;

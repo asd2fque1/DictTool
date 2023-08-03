@@ -23,7 +23,7 @@ function cleanSource(){
 	Util.cleanTextBox($("#txtSource"));
 }
 function runFunc(){
-	$("#txtTarget").val(Util.simpleNotFull($("#txtSource").val(),$("[name='charOrWord']:checked").val(),$("#keepMaxLength").val()));
+	$("#txtTarget").val(Util.simpleNotFull($("#txtSource").val(),$("[name='charOrWord']:checked").val(),$("[name='keepMaxType']:checked").val(),$("#keepMaxLength").val()));
 }
 function cleanTarget(){
 	Util.cleanTextBox($("#txtTarget"));
@@ -69,12 +69,17 @@ d 在
 <input type="radio" id="charOrWord1" name="charOrWord" /><label for="charOrWord1">仅处理单字</label>
 <input type="radio" id="charOrWord2" name="charOrWord" /><label for="charOrWord2">仅处理词组</label>
 <br>
-不删除非最简码的最大长度
+不删除编码长度
+<input type="radio" id="keepMaxType0" name="keepMaxType" checked="checked" /><label for="keepMaxType0">超过</label>
+<input type="radio" id="keepMaxType1" name="keepMaxType" /><label for="keepMaxType1">不足</label>
 <input type="text" id="keepMaxLength" maxlength="2" />
+的非最简码
 <script>
 $("#charOrWord0").val(Util.CONST.CHAR_OR_WORD.ALL);
 $("#charOrWord1").val(Util.CONST.CHAR_OR_WORD.CHAR);
 $("#charOrWord2").val(Util.CONST.CHAR_OR_WORD.WORD);
+$("#keepMaxType0").val(Util.CONST.KEEP_MAX_TYPE.LARGE_THAN);
+$("#keepMaxType1").val(Util.CONST.KEEP_MAX_TYPE.SMALL_THAN);
 </script>
 <br>
 <button id="runBtn" onclick="runFunc();">处理</button>
