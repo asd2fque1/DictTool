@@ -23,7 +23,7 @@ function cleanSource(){
 	Util.cleanTextBox($("#txtSource"));
 }
 function runFunc(){
-	$("#txtTarget").val(Util.simpleNotFull($("#txtSource").val(),$("[name='charOrWord']:checked").val(),$("[name='keepMaxType']:checked").val(),$("#keepMaxLength").val()));
+	$("#txtTarget").val(Util.simpleNotFull($("#txtSource").val(),$("[name='simpleRuleType']:checked").val(),$("[name='charOrWord']:checked").val(),$("[name='keepMaxType']:checked").val(),$("#keepMaxLength").val()));
 }
 function cleanTarget(){
 	Util.cleanTextBox($("#txtTarget"));
@@ -53,6 +53,7 @@ ggwh 一个
 yi 一
 aa 式
 aa 工
+aaa 工
 aaaa 工
 f 地
 f 都
@@ -65,6 +66,10 @@ d 在
 <button id="cleanSourceBtn" onclick="cleanSource();">清空文本</button>
 <br>
 <br>
+<input type="radio" id="simpleRuleType0" name="simpleRuleType" checked="checked" /><label for="simpleRuleType0">仅通过编码长度判断简码</label>
+<input type="radio" id="simpleRuleType1" name="simpleRuleType" /><label for="simpleRuleType1">通过前部编码是否相同逐步判断简码</label>
+（参考<a href="./simplenotfullhelp.htm">说明</a>）
+<br>
 <input type="radio" id="charOrWord0" name="charOrWord" checked="checked" /><label for="charOrWord0">处理全部词条</label>
 <input type="radio" id="charOrWord1" name="charOrWord" /><label for="charOrWord1">仅处理单字</label>
 <input type="radio" id="charOrWord2" name="charOrWord" /><label for="charOrWord2">仅处理词组</label>
@@ -75,6 +80,8 @@ d 在
 <input type="text" id="keepMaxLength" maxlength="2" />
 的非最简码
 <script>
+$("#simpleRuleType0").val(Util.CONST.SIMPLE_RULE_TYPE.ONLY_LENGTH);
+$("#simpleRuleType1").val(Util.CONST.SIMPLE_RULE_TYPE.SAME_TOP_CODE);
 $("#charOrWord0").val(Util.CONST.CHAR_OR_WORD.ALL);
 $("#charOrWord1").val(Util.CONST.CHAR_OR_WORD.CHAR);
 $("#charOrWord2").val(Util.CONST.CHAR_OR_WORD.WORD);
@@ -90,7 +97,6 @@ g 一
 g 与
 g 王
 gw 一个
-yi 一
 aa 式
 aa 工
 f 地

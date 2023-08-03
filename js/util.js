@@ -618,11 +618,14 @@
 		return newLineList;
 	};
 	//出简不出全(isCharOrWord:0=单字加词组 1=仅单字 2=仅词组)
-	Util.simpleNotFull=function(str,isCharOrWord,keepMaxType,keepMaxLength){
+	Util.simpleNotFull=function(str,simpleRuleType,isCharOrWord,keepMaxType,keepMaxLength){
 		var lineList=Util.parseLineStrToLineList(str);
-		var newLineList=Util.simpleNotFullByList(lineList,isCharOrWord,keepMaxType,keepMaxLength);
+		var newLineList=Util.simpleNotFullByList(lineList,simpleRuleType,isCharOrWord,keepMaxType,keepMaxLength);
 		return Util.parseLineListToLineStr(newLineList);
 	};
+	Util.CONST.SIMPLE_RULE_TYPE={};
+	Util.CONST.SIMPLE_RULE_TYPE.ONLY_LENGTH=0;
+	Util.CONST.SIMPLE_RULE_TYPE.SAME_TOP_CODE=1;
 	Util.CONST.CHAR_OR_WORD={};
 	Util.CONST.CHAR_OR_WORD.ALL=0;
 	Util.CONST.CHAR_OR_WORD.CHAR=1;
@@ -630,7 +633,7 @@
 	Util.CONST.KEEP_MAX_TYPE={};
 	Util.CONST.KEEP_MAX_TYPE.LARGE_THAN=0;
 	Util.CONST.KEEP_MAX_TYPE.SMALL_THAN=1;
-	Util.simpleNotFullByList=function(lineList,isCharOrWord,keepMaxType,keepMaxLength){
+	Util.simpleNotFullByList=function(lineList,simpleRuleType,isCharOrWord,keepMaxType,keepMaxLength){
 		var newLineList=[];
 		var errorLineList=[];
 		
@@ -659,33 +662,52 @@
 			}
 		}
 		
-		for(var tempCodeChar in codeCharMap){
-			var tempCodeCharArr = [];
-			var referCodeCharArr=codeCharMap[tempCodeChar];
-			for(var i=0;i<referCodeCharArr.length;i++){
-				var hasSimpleCode = false;
-				var currCode = referCodeCharArr[i];
-				if(keepMaxLength>0 && (keepMaxType==Util.CONST.KEEP_MAX_TYPE.LARGE_THAN && currCode.length>keepMaxLength || keepMaxType==Util.CONST.KEEP_MAX_TYPE.SMALL_THAN && currCode.length<keepMaxLength)){
-					tempCodeCharArr.push(currCode);
-				}else{
-					for(var j=0;j<currCode.length-1;j++){
-						if(tempCodeCharArr.indexOf(currCode.substr(0,j+1))>=0){
-							hasSimpleCode = true;
-							break;
-						}
+		if(simpleRuleType==Util.CONST.SIMPLE_RULE_TYPE.ONLY_LENGTH){
+			//仅通过编码长度判断简码
+			for(var tempCodeChar in codeCharMap){
+				var tempCodeCharArr=codeCharMap[tempCodeChar];
+				var minLength=100;
+				for(var i=0;i<tempCodeCharArr.length;i++){
+					if(tempCodeCharArr[i].length<minLength){
+						minLength=tempCodeCharArr[i].length;
 					}
-					
-					if (!hasSimpleCode){
-						for(var j=tempCodeCharArr.length-1;j>=0;j--){
-							if(tempCodeCharArr[j].indexOf(currCode)==0){
-								tempCodeCharArr.splice(j,1);
-							}
-						}
-						tempCodeCharArr.push(currCode);
+				}
+				for(var i=tempCodeCharArr.length-1;i>=0;i--){
+					if(tempCodeCharArr[i].length!=minLength && (keepMaxLength<=0 || (keepMaxType==Util.CONST.KEEP_MAX_TYPE.LARGE_THAN && tempCodeCharArr[i].length<=keepMaxLength || keepMaxType==Util.CONST.KEEP_MAX_TYPE.SMALL_THAN && tempCodeCharArr[i].length>=keepMaxLength))){
+						tempCodeCharArr.splice(i,1);
 					}
 				}
 			}
-			codeCharMap[tempCodeChar] = tempCodeCharArr;
+		}else if(simpleRuleType==Util.CONST.SIMPLE_RULE_TYPE.SAME_TOP_CODE){
+			//通过前部编码是否相同逐步判断简码
+			for(var tempCodeChar in codeCharMap){
+				var tempCodeCharArr = [];
+				var referCodeCharArr=codeCharMap[tempCodeChar];
+				for(var i=0;i<referCodeCharArr.length;i++){
+					var hasSimpleCode = false;
+					var currCode = referCodeCharArr[i];
+					if(keepMaxLength>0 && (keepMaxType==Util.CONST.KEEP_MAX_TYPE.LARGE_THAN && currCode.length>keepMaxLength || keepMaxType==Util.CONST.KEEP_MAX_TYPE.SMALL_THAN && currCode.length<keepMaxLength)){
+						tempCodeCharArr.push(currCode);
+					}else{
+						for(var j=0;j<currCode.length-1;j++){
+							if(tempCodeCharArr.indexOf(currCode.substr(0,j+1))>=0){
+								hasSimpleCode = true;
+								break;
+							}
+						}
+						
+						if (!hasSimpleCode){
+							for(var j=tempCodeCharArr.length-1;j>=0;j--){
+								if(tempCodeCharArr[j].indexOf(currCode)==0){
+									tempCodeCharArr.splice(j,1);
+								}
+							}
+							tempCodeCharArr.push(currCode);
+						}
+					}
+				}
+				codeCharMap[tempCodeChar] = tempCodeCharArr;
+			}
 		}
 		
 		for(var i=0;i<lineList.length;i++){
