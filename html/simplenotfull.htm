@@ -66,8 +66,9 @@ d 在
 <button id="cleanSourceBtn" onclick="cleanSource();">清空文本</button>
 <br>
 <br>
-<input type="radio" id="simpleRuleType0" name="simpleRuleType" checked="checked" /><label for="simpleRuleType0">仅通过编码长度判断简码</label>
+<input type="radio" id="simpleRuleType0" name="simpleRuleType" /><label for="simpleRuleType0">仅通过编码长度判断简码</label>
 <input type="radio" id="simpleRuleType1" name="simpleRuleType" /><label for="simpleRuleType1">通过前部编码是否相同逐步判断简码</label>
+<input type="radio" id="simpleRuleType2" name="simpleRuleType" checked="checked" /><label for="simpleRuleType2">通过编码是否完全包含判断简码</label>
 （参考<a href="./simplenotfullhelp.htm">说明</a>）
 <br>
 <input type="radio" id="charOrWord0" name="charOrWord" checked="checked" /><label for="charOrWord0">处理全部词条</label>
@@ -82,6 +83,7 @@ d 在
 <script>
 $("#simpleRuleType0").val(Util.CONST.SIMPLE_RULE_TYPE.ONLY_LENGTH);
 $("#simpleRuleType1").val(Util.CONST.SIMPLE_RULE_TYPE.SAME_TOP_CODE);
+$("#simpleRuleType2").val(Util.CONST.SIMPLE_RULE_TYPE.INCLUDE_PERMUTATION);
 $("#charOrWord0").val(Util.CONST.CHAR_OR_WORD.ALL);
 $("#charOrWord1").val(Util.CONST.CHAR_OR_WORD.CHAR);
 $("#charOrWord2").val(Util.CONST.CHAR_OR_WORD.WORD);

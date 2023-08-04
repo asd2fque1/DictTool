@@ -41,9 +41,23 @@
 	}
 	Util.isEmptyObject=function(obj){
 		for(var key in obj){
-			return false
+			return false;
 		};
-		return true
+		return true;
+	};
+	Util.isPermutationPart=function(permutationStr, fullStr){
+		//判断第一个字符串是不是顺序包含在第二个字符串中
+		var j=0;
+		for(var i=0;i<fullStr.length;i++){
+			var permutationChar=permutationStr.substr(j,1);
+			if(permutationChar==fullStr.substr(i,1)){
+				j++;
+				if(j>=permutationStr.length){
+					return true;
+				}
+			}
+		}
+		return false;
 	};
 	
 	////页面通用方法////
@@ -626,6 +640,7 @@
 	Util.CONST.SIMPLE_RULE_TYPE={};
 	Util.CONST.SIMPLE_RULE_TYPE.ONLY_LENGTH=0;
 	Util.CONST.SIMPLE_RULE_TYPE.SAME_TOP_CODE=1;
+	Util.CONST.SIMPLE_RULE_TYPE.INCLUDE_PERMUTATION=2;
 	Util.CONST.CHAR_OR_WORD={};
 	Util.CONST.CHAR_OR_WORD.ALL=0;
 	Util.CONST.CHAR_OR_WORD.CHAR=1;
@@ -674,6 +689,7 @@
 				}
 				for(var i=tempCodeCharArr.length-1;i>=0;i--){
 					if(tempCodeCharArr[i].length!=minLength && (keepMaxLength<=0 || (keepMaxType==Util.CONST.KEEP_MAX_TYPE.LARGE_THAN && tempCodeCharArr[i].length<=keepMaxLength || keepMaxType==Util.CONST.KEEP_MAX_TYPE.SMALL_THAN && tempCodeCharArr[i].length>=keepMaxLength))){
+						//删除非简码（保留根据编码长度判断的不删除编码）
 						tempCodeCharArr.splice(i,1);
 					}
 				}
@@ -687,6 +703,7 @@
 					var hasSimpleCode = false;
 					var currCode = referCodeCharArr[i];
 					if(keepMaxLength>0 && (keepMaxType==Util.CONST.KEEP_MAX_TYPE.LARGE_THAN && currCode.length>keepMaxLength || keepMaxType==Util.CONST.KEEP_MAX_TYPE.SMALL_THAN && currCode.length<keepMaxLength)){
+						//保留根据编码长度判断的不删除编码
 						tempCodeCharArr.push(currCode);
 					}else{
 						for(var j=0;j<currCode.length-1;j++){
@@ -699,6 +716,37 @@
 						if (!hasSimpleCode){
 							for(var j=tempCodeCharArr.length-1;j>=0;j--){
 								if(tempCodeCharArr[j].indexOf(currCode)==0){
+									tempCodeCharArr.splice(j,1);
+								}
+							}
+							tempCodeCharArr.push(currCode);
+						}
+					}
+				}
+				codeCharMap[tempCodeChar] = tempCodeCharArr;
+			}
+		}else if(simpleRuleType==Util.CONST.SIMPLE_RULE_TYPE.INCLUDE_PERMUTATION){
+			//通过编码是否完全包含判断简码
+			for(var tempCodeChar in codeCharMap){
+				var tempCodeCharArr = [];
+				var referCodeCharArr=codeCharMap[tempCodeChar];
+				for(var i=0;i<referCodeCharArr.length;i++){
+					var hasSimpleCode = false;
+					var currCode = referCodeCharArr[i];
+					if(keepMaxLength>0 && (keepMaxType==Util.CONST.KEEP_MAX_TYPE.LARGE_THAN && currCode.length>keepMaxLength || keepMaxType==Util.CONST.KEEP_MAX_TYPE.SMALL_THAN && currCode.length<keepMaxLength)){
+						//保留根据编码长度判断的不删除编码
+						tempCodeCharArr.push(currCode);
+					}else{
+						for(var j=0;j<tempCodeCharArr.length;j++){
+							if(Util.isPermutationPart(tempCodeCharArr[j],currCode)){
+								hasSimpleCode = true;
+								break;
+							}
+						}
+						
+						if (!hasSimpleCode){
+							for(var j=tempCodeCharArr.length-1;j>=0;j--){
+								if(Util.isPermutationPart(currCode,tempCodeCharArr[j])){
 									tempCodeCharArr.splice(j,1);
 								}
 							}
