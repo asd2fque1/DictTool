@@ -14,8 +14,10 @@ function keydownFunc(event){
 	var e = event || window.event || arguments.callee.caller.arguments[0];
 	if(e){
 		var str="";
-		str=str+"Code:&nbsp;"+e.keyCode.toString()+"<br>";
-		str=str+"Code:&nbsp;0x"+e.keyCode.toString(16)+"<br>";
+		str=str+"Code:&nbsp;"+e.code.toString()+"<br>";
+		str=str+"Key:&nbsp;"+e.key.toString()+"<br>";
+		str=str+"KeyCode:&nbsp;"+e.keyCode.toString()+"<br>";
+		str=str+"KeyCode:&nbsp;0x"+e.keyCode.toString(16)+"<br>";
 		$("#spanTarget").html(str);
 	}
 }
