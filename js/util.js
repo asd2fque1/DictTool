@@ -66,7 +66,7 @@
 		$(textDom).val("");
 	};
 	//读取文件内容到文本框
-	Util.readFileToTextBox=function(fileDom,textDom){
+	Util.readFileToTextBox=function(fileDom,textDom,callback){
 		fileDom=$(fileDom);
 		textDom=$(textDom);
 		if(fileDom.size()==1 && (fileDom.is("input") || fileDom.is("textarea")) && fileDom.get(0).files && textDom.size()==1){
@@ -81,11 +81,29 @@
 				reader.onload=function(){
 					textDom.val(this.result);
 					fileDom.val("");
+					if(callback){
+						callback();
+					}
 				}
 			}
 		}else{
 			alert("error:not file dom");
 		}
+	};
+	//从文本框生成预览到预览文本框
+	Util.writePreviewFromTextBox=function(textDom,textPreviewDom){
+		var lineList=Util.parseLineStrToLineList(textDom.val());
+		var newLineList=[];
+		
+		for(var i=0;i<lineList.length;i++){
+			if(i>=5){
+				newLineList.push("......");
+				break;
+			}
+			newLineList.push(lineList[i]);
+		}
+		
+		textPreviewDom.val(Util.parseLineListToLineStr(newLineList));
 	};
 	//选中文本框文字
 	Util.selectTextBoxText=function(textDom){

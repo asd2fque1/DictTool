@@ -3,6 +3,9 @@ textarea{
 	width:600px;
 	height:400px;
 }
+textarea[id$='Preview']{
+	height:110px;
+}
 input[type='text']{
 	width:50px;
 }
